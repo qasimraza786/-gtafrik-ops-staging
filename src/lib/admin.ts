@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, supabaseAnonKey, supabaseUrl } from "./supabase";
 import type { UserRole } from "./auth";
 
 export type AdminUser = {
@@ -19,8 +19,8 @@ export async function fetchUsers(): Promise<AdminUser[]> {
   return (data as AdminUser[]) ?? [];
 }
 
-const FN_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/manage-users`;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const FN_URL = `${supabaseUrl}/functions/v1/manage-users`;
+const ANON = supabaseAnonKey;
 
 async function callFn(payload: Record<string, unknown>): Promise<void> {
   const { data: sess } = await supabase.auth.getSession();

@@ -1,7 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const PLACEHOLDER_SUPABASE_URL = "https://placeholder.supabase.co";
+const PLACEHOLDER_SUPABASE_ANON_KEY = "staging-placeholder-anon-key";
+
+function validHttpUrl(value: string | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+export const supabaseUrl =
+  validHttpUrl(process.env.NEXT_PUBLIC_SUPABASE_URL) ?? PLACEHOLDER_SUPABASE_URL;
+
+export const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || PLACEHOLDER_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
