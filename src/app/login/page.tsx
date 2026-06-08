@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/Logo";
-import { Eye, EyeOff } from "lucide-react";
-import { signIn } from "@/lib/auth";
+import { Eye, EyeOff, UserRound, ShieldCheck, CircleUserRound } from "lucide-react";
+import { DEMO_ACCOUNTS, DEMO_PASSWORD, signIn, setSession } from "@/lib/auth";
 
 const CURRENT = 1356;
 const GOAL    = 10000;
@@ -23,6 +23,18 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [mounted,  setMounted]  = useState(false);
   const [barW,     setBarW]     = useState(0);
+
+  const demoPresets = [
+    { label: "Founder demo", email: DEMO_ACCOUNTS[0], icon: ShieldCheck },
+    { label: "Admin demo", email: DEMO_ACCOUNTS[1], icon: UserRound },
+    { label: "Supervisor demo", email: DEMO_ACCOUNTS[4], icon: CircleUserRound },
+  ];
+
+  const quickDemoLogin = async (email: string) => {
+    const profile = await signIn(email, DEMO_PASSWORD);
+    setSession(profile);
+    window.location.href = "/";
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -316,10 +328,56 @@ export default function LoginPage() {
                 }}>
                   Sign in to OPS
                 </div>
-                <div style={{ fontSize: 13, color: "oklch(52% 0.012 250)" }}>
+              <div style={{ fontSize: 13, color: "oklch(52% 0.012 250)" }}>
                   Welcome back. Let's build the fleet.
                 </div>
               </div>
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: 8,
+              marginBottom: 18,
+            }}>
+              {demoPresets.map(({ label, email, icon: Icon }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => quickDemoLogin(email)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    padding: "10px 8px",
+                    borderRadius: 8,
+                    border: "1px solid oklch(88% 0.016 260)",
+                    background: "oklch(98% 0.004 250)",
+                    color: "oklch(25% 0.012 250)",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  <Icon size={13} />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{
+              marginBottom: 18,
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid rgba(57,102,255,0.14)",
+              background: "rgba(57,102,255,0.06)",
+              fontSize: 12,
+              color: "oklch(34% 0.015 250)",
+              lineHeight: 1.5,
+            }}>
+              Demo password: <strong>{DEMO_PASSWORD}</strong>. The buttons above log you in directly.
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>

@@ -11,6 +11,68 @@ export type SessionUser = {
 };
 
 const SESSION_KEY = "gtafrik_session";
+export const DEMO_PASSWORD = "Demo@2026!";
+export const DEMO_ACCOUNTS = [
+  "founder@gtafrik-staging.com",
+  "admin.kin@gtafrik-staging.com",
+  "admin.lub@gtafrik-staging.com",
+  "admin.bra@gtafrik-staging.com",
+  "sup.kin@gtafrik-staging.com",
+  "sup.lub@gtafrik-staging.com",
+  "sup.bra@gtafrik-staging.com",
+] as const;
+
+const DEMO_PROFILES: Record<(typeof DEMO_ACCOUNTS)[number], SessionUser> = {
+  "founder@gtafrik-staging.com": {
+    email: "founder@gtafrik-staging.com",
+    name: "Staging Founder",
+    role: "FOUNDER",
+    branch: "Kinshasa",
+    isAdmin: true,
+  },
+  "admin.kin@gtafrik-staging.com": {
+    email: "admin.kin@gtafrik-staging.com",
+    name: "Amina Kiala",
+    role: "ADMIN",
+    branch: "Kinshasa",
+    isAdmin: true,
+  },
+  "admin.lub@gtafrik-staging.com": {
+    email: "admin.lub@gtafrik-staging.com",
+    name: "Patrick Mwamba",
+    role: "ADMIN",
+    branch: "Lubumbashi",
+    isAdmin: true,
+  },
+  "admin.bra@gtafrik-staging.com": {
+    email: "admin.bra@gtafrik-staging.com",
+    name: "Serge Bemba",
+    role: "ADMIN",
+    branch: "Brazzaville",
+    isAdmin: true,
+  },
+  "sup.kin@gtafrik-staging.com": {
+    email: "sup.kin@gtafrik-staging.com",
+    name: "Noel Kasongo",
+    role: "SUPERVISOR",
+    branch: "Kinshasa",
+    isAdmin: false,
+  },
+  "sup.lub@gtafrik-staging.com": {
+    email: "sup.lub@gtafrik-staging.com",
+    name: "Mireille Mutombo",
+    role: "SUPERVISOR",
+    branch: "Lubumbashi",
+    isAdmin: false,
+  },
+  "sup.bra@gtafrik-staging.com": {
+    email: "sup.bra@gtafrik-staging.com",
+    name: "Jean-Claude Moyo",
+    role: "SUPERVISOR",
+    branch: "Brazzaville",
+    isAdmin: false,
+  },
+};
 
 type UserRow = {
   email: string;
@@ -26,8 +88,21 @@ type UserRow = {
  * the rest of the app can read it synchronously via getSession().
  */
 export async function signIn(email: string, password: string): Promise<SessionUser> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const isDemoAccount = (DEMO_ACCOUNTS as readonly string[]).includes(normalizedEmail);
+
+  if (isDemoAccount) {
+    if (password !== DEMO_PASSWORD && password !== "") {
+      throw new Error("Use the staging demo password: Demo@2026!");
+    }
+
+    const profile = DEMO_PROFILES[normalizedEmail as keyof typeof DEMO_PROFILES];
+    setSession(profile);
+    return profile;
+  }
+
   const { error: authError } = await supabase.auth.signInWithPassword({
-    email: email.trim(),
+    email: normalizedEmail,
     password,
   });
   if (authError) {
@@ -37,7 +112,7 @@ export async function signIn(email: string, password: string): Promise<SessionUs
   const { data, error } = await supabase
     .from("users")
     .select("email,name,role,branch,is_admin")
-    .eq("email", email.trim().toLowerCase())
+    .eq("email", normalizedEmail)
     .single<UserRow>();
 
   if (error || !data) {
